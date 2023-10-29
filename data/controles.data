@@ -1,0 +1,26 @@
+Telecommande SONY TV - RM-ED016
+
+NAME, IR, KEY_DEFAUT, APP1, APP2, APP3, APP4
+onoff, 565646, alt+f4,,,,
+play, 565465, 0xB3,,,,
+pause,
+suiv,
+prec,
+stop,
+ok,
+up,
+down
+left,
+right,
+return,
+home,
+red,
+green,
+yellow,
+blue,
+coeur,
+volup,
+voldown,
+progup,
+progdown,
+mute,

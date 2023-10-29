@@ -1,0 +1,129 @@
+/* IMPORTATIONS */
+#include "main.hpp"
+
+/* ESPACE DE TRAVAIL */
+using namespace std;
+
+/* MAIN */
+int main()
+{
+	/* CONSTANTES */
+	char const VALUE_SEPARATOR = '+';
+	string const DATA_FOLDER = "./data/";
+	string const DATA_FILE = "ControlesRMED016.data";
+	string const PORT = "COM5";
+	string const DEFAULT_LED_COLOR = "0,0,0";
+
+	/* VARIABLES */
+	string userPort;
+	string userDataFile;
+
+	string inputArduino;
+	fstream serialPort;
+
+	Telecommande telecommande;
+	int tmpIndex(-1);
+
+	ifstream fichierData;
+	string strCommande;
+
+	/* Saisies utilisateur */
+	cout << "Port (format : \"COMx\") > ";
+	getline(cin, userPort);
+	if( userPort.empty() ){ userPort = PORT; }
+
+	cout << "Fichier (format : \"name.data\") > " << DATA_FOLDER;
+	getline(cin, userDataFile);
+	if( userDataFile.empty() ){ userDataFile = DATA_FILE; }
+
+
+	/* Connexion sur le port série */
+	serialPort.open( userPort, ios::out | ios::in );
+	if( !serialPort.is_open() )
+	{
+		cout << "Erreur lors de l'ouverture du port serie " << userPort << endl;
+		return 1;
+	}
+	cout << "Connexion au port serie " << userPort << " reussie." << endl;
+
+	serialPort.setf(std::ios::dec);
+	serialPort << DEFAULT_LED_COLOR << endl; //reinitialisation de la couleur de la led
+
+
+	/* Lecture des datas */
+	fichierData.open( (DATA_FOLDER + userDataFile).c_str() );
+	if( fichierData )
+	{
+		telecommande = OutilsData::initTelecommandeWithData( fichierData );
+
+		cout << "Interraction via : " << endl;
+		cout << "\t" << telecommande.toString() << endl;
+
+		fichierData.close();
+	}
+	else
+	{
+		cout << "Erreur lors de l'ouverture du fichier " + DATA_FOLDER + userDataFile << endl;
+		return 1;
+	}
+
+	/* Boucle d'intéraction */
+	while( true )
+	{
+		// Récupérer la sorite IR de l'arduino
+		getline(serialPort, inputArduino);
+
+		tmpIndex = telecommande.getIndexApplicationByCodeIR( inputArduino );
+		bool codeEstUneApp = (tmpIndex != -1);
+		if( codeEstUneApp )
+		{
+			telecommande.setCurrentAppIndex( tmpIndex );
+			serialPort << telecommande.getCurrentApplication().getColor() << endl; //ajoute un changement de led via le port série
+			continue;
+		}
+
+		tmpIndex = telecommande.getIndexActionByCodeIR( inputArduino );
+		bool codeEstAction = (tmpIndex != -1);
+		if( !codeEstAction ){ continue; }
+
+		strCommande = telecommande.getAction(tmpIndex).getCommandeActive( telecommande.getCurrentAppIndex() );
+
+		bool estCommandeVide = (strCommande == "" || strCommande == ".");
+		if( estCommandeVide ){ continue; }
+
+		// décompose la commande pour pouvoir l'utiliser comme raccourcis clavier
+		vector<string> ensCommandeStr = Outils::decomposerTexte(strCommande, VALUE_SEPARATOR);
+		vector<int> ensCommandeInt = Outils::convertirVectorStringToVectorInt( ensCommandeStr );
+
+		// Active les touches
+		useKeystroke( ensCommandeInt );
+	}
+
+
+	serialPort.close();
+	return 0;
+}
+
+/* FONCTIONS */
+void useKeystroke( vector<int> combinaisons )
+{
+	//On active chaque touches
+	for( int cptTouche=0; cptTouche<combinaisons.size(); cptTouche++ )
+	{
+		if( combinaisons[cptTouche] != 0 )
+		{
+			cout << "+" << combinaisons[cptTouche] << endl;
+			keybd_event( combinaisons[cptTouche], 0, 0, 0 );
+		}
+	}
+
+	//On relache chaque touches
+	for( int cptTouche=0; cptTouche<combinaisons.size(); cptTouche++ )
+	{
+		if( combinaisons[cptTouche] != 0 )
+		{
+			//cout << "-" << combinaisons[cptTouche] << endl;
+			keybd_event( combinaisons[cptTouche], 0, KEYEVENTF_KEYUP, 0 );
+		}
+	}
+}

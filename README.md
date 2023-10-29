@@ -1,5 +1,8 @@
 # ControleIR
 Programme permettant de controler son PC via une télécommande infrarouge quelconque.
+/!\ ce projet est en cours de développement /!\
+
+modèles 3D : (https://www.thingiverse.com/thing:6199740)[https://www.thingiverse.com/thing:6199740]
 
 ## Inclus dans le projet
 - Montage arduino

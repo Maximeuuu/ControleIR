@@ -3,7 +3,7 @@ Programme permettant de controler son PC via une télécommande infrarouge quelc
 
 /!\ ce projet est en cours de développement /!\
 
-modèles 3D : [https://www.thingiverse.com/thing:6199740](https://www.thingiverse.com/thing:6199740)
+Mes modèles 3D : [https://www.thingiverse.com/thing:6199740](https://www.thingiverse.com/thing:6199740)
 
 ## Inclus dans le projet
 - Montage arduino
